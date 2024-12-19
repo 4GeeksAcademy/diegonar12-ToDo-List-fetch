@@ -46,24 +46,30 @@ const TodoList = () => {
       </div>
       <ul className="list-group">
         {items.map((item, index) => (
-          <li className="list-group-item d-flex justify-content-between" key={index}>
-          <div className="d-flex align-items-center">
-            <input
-              className="form-check-input me-2"
-              type="checkbox"
-              value=""
-              id="flexCheckDefault"
+          <li
+            className="list-group-item d-flex justify-content-between"
+            key={index}
+          >
+            <div className="d-flex align-items-center">
+              <input
+                className="form-check-input me-2"
+                type="checkbox"
+                value=""
+                id="flexCheckDefault"
+              />
+              {item}
+            </div>
+            <FontAwesomeIcon
+              icon={faTrash}
+              className="text-danger"
+              onClick={() => removeItem(index)}
             />
-            {item}
-          </div>
-          <FontAwesomeIcon
-            icon={faTrash}
-            className="text-danger"
-            onClick={() => removeItem(index)}
-          />
-        </li>
+          </li>
         ))}
       </ul>
+      <div className="text-center mt-3">
+        <strong>{items.length} left</strong>
+      </div>
     </div>
   );
 };
