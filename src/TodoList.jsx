@@ -11,10 +11,9 @@ const TodoList = () => {
     if (inputValue !== "") {
       setItems([...items, inputValue]);
       setInputValue("");
-      return;
+    } else {
+      alert("Debe estar lleno");
     }
-
-    alert("Debe estar lleno");
   };
 
   const handleEnter = (e) => {
@@ -45,30 +44,38 @@ const TodoList = () => {
         </button>
       </div>
       <ul className="list-group">
-        {items.map((item, index) => (
-          <li
-            className="list-group-item d-flex justify-content-between"
-            key={index}
-          >
-            <div className="d-flex align-items-center">
-              <input
-                className="form-check-input me-2"
-                type="checkbox"
-                value=""
-                id="flexCheckDefault"
-              />
-              {item}
-            </div>
-            <FontAwesomeIcon
-              icon={faTrash}
-              className="text-danger"
-              onClick={() => removeItem(index)}
-            />
+        {items.length === 0 ? (
+          <li className="list-group-item text-center">
+            No hay tareas, añadir tareas
           </li>
-        ))}
+        ) : (
+          items.map((item, index) => (
+            <li
+              className="list-group-item d-flex justify-content-between align-items-center"
+              key={index}
+            >
+              <div className="d-flex align-items-center">
+                <input
+                  className="form-check-input me-2"
+                  type="checkbox"
+                  value=""
+                  id={`task-${index}`}
+                />
+                {item}
+              </div>
+              <FontAwesomeIcon
+                icon={faTrash}
+                className="text-danger trash-icon"
+                onClick={() => removeItem(index)}
+              />
+            </li>
+          ))
+        )}
       </ul>
       <div className="text-center mt-3">
-        <strong>{items.length} left</strong>
+        <strong>
+          {items.length} {items.length === 1 ? "tarea restante" : "tareas restantes"}
+        </strong>
       </div>
     </div>
   );
