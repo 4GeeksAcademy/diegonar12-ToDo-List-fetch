@@ -1,78 +1,146 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faT, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./styles.css";
 
 const TodoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [items, setItems] = useState([]);
-
-  const [userName, setUserName] = useState("diegonar12")
+  const [userName, setUserName] = useState("diegonar12");
 
   const addUser = async () => {
-    try{
-      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`, {method: 'POST'})
-    } catch{
-      console.error('Algo salio mal')
+    try {
+      const response = await fetch(
+        `https://playground.4geeks.com/todo/users/${userName}`,
+        { method: "POST" }
+      );
+      if (!response.ok) {
+        console.error(`Error al crear el usuario: ${response.status}`);
+        alert("No se pudo crear el usuario.");
+        return;
+      }
+      console.log("Usuario creado correctamente");
+    } catch (error) {
+      console.error("Algo salió mal al agregar el usuario", error);
     }
-  }
+  };
 
   const deleteUser = async () => {
-    try{
-      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`, {method: 'DELETE'})
-    } catch{
-      console.error('Algo salio mal')
+    try {
+      const response = await fetch(
+        `https://playground.4geeks.com/todo/users/${userName}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) {
+        console.error(`Error al eliminar usuario: ${response.status}`);
+        alert("No se pudo eliminar el usuario.");
+        return;
+      }
+      setItems([]);
+      alert("Usuario eliminado correctamente.");
+    } catch (error) {
+      console.error("Algo salió mal al borrar el usuario", error);
     }
-    setItems('')
-  }
-
-  useEffect(() =>{
-    addUser()
-  }, [])
-
+  };
 
   const addItem = async () => {
-
-    if (inputValue !== ''){
-      try{
-        const response = await fetch(`https://playground.4geeks.com/todo/todos/${userName}`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ 'label': inputValue, 'is_done': false }),
-      })
-      const convert = await response.json()
-      setItems([...items, convert])
-      setInputValue('')
-      } catch {
-          console.error('Algo salio mal x2')
-      }
-    } else {
-      alert('Debe estar lleno')
-    } 
-  }
-
-  const deleteItem = async (id) => {
-      const updatedItems = items.filter((item, i) => item.id !== id);
-      setItems(updatedItems);
-    try{
-      const response = await fetch(`https://playground.4geeks.com/todo/todos/${id}`, {method: 'DELETE'})
-    } catch{
-      console.error('Algo salio mal')
+    if (inputValue === "") {
+      alert("Debe escribir una tarea.");
+      return;
     }
-  }
- 
+
+    const newTask = { label: inputValue, is_done: false };
+    const updatedItems = [...items, newTask];
+
+    try {
+      const response = await fetch(
+        `https://playground.4geeks.com/todo/todos/${userName}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedItems),
+        }
+      );
+
+      if (!response.ok) {
+        console.error(`Error al agregar la tarea: ${response.status}`);
+        alert("No se pudo agregar la tarea.");
+        return;
+      }
+
+      setItems(updatedItems);
+      setInputValue("");
+    } catch (error) {
+      console.error("Algo salió mal al agregar la tarea", error);
+    }
+  };
+
+  const deleteItem = async (index) => {
+    const updatedItems = items.filter((_, i) => i !== index);
+
+    try {
+      const response = await fetch(
+        `https://playground.4geeks.com/todo/todos/${userName}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedItems),
+        }
+      );
+
+      if (!response.ok) {
+        console.error(`Error al eliminar la tarea: ${response.status}`);
+        alert("No se pudo eliminar la tarea.");
+        return;
+      }
+
+      setItems(updatedItems);
+    } catch (error) {
+      console.error("Algo salió mal al eliminar la tarea", error);
+    }
+  };
+
+  const getItems = async () => {
+    try {
+      const response = await fetch(
+        `https://playground.4geeks.com/todo/todos/${userName}`,
+        { method: "GET" }
+      );
+
+      if (!response.ok) {
+        console.error(`Error al obtener tareas: ${response.status}`);
+        alert("No se pudieron cargar las tareas o el usuario no existe.");
+        setItems([]);
+        return;
+      }
+
+      const data = await response.json();
+      setItems(data);
+    } catch (error) {
+      console.error("Algo salió mal al obtener las tareas", error);
+      alert("No se pudieron cargar las tareas.");
+    }
+  };
+
   const handleEnter = (e) => {
     if (e.key === "Enter") {
       addItem();
     }
   };
 
+  useEffect(() => {
+    const initializeUser = async () => {
+      await addUser();
+      await getItems();
+    };
+    initializeUser();
+  }, []);
 
   return (
     <div className="container mt-4">
       <h4 className="text-center mb-4">To-Do List</h4>
       <div className="mb-3">
-      <input
+        <input
           type="text"
           className="form-control"
           placeholder="Escribe tu usuario"
@@ -93,8 +161,8 @@ const TodoList = () => {
         <button className="btn btn-danger w-100 mt-2" onClick={deleteUser}>
           Eliminar Usuario
         </button>
-        <button className="btn btn-primary w-100 mt-2" onClick={deleteUser}>
-          Login 
+        <button className="btn btn-primary w-100 mt-2" onClick={getItems}>
+          Login
         </button>
       </div>
       <ul className="list-group">
@@ -120,7 +188,7 @@ const TodoList = () => {
               <FontAwesomeIcon
                 icon={faTrash}
                 className="text-danger trash-icon"
-                onClick={() => deleteItem(item.id)}
+                onClick={() => deleteItem(index)}
               />
             </li>
           ))
@@ -128,7 +196,8 @@ const TodoList = () => {
       </ul>
       <div className="text-center mt-3">
         <strong>
-          {items.length} {items.length === 1 ? "tarea restante" : "tareas restantes"}
+          {items.length}{" "}
+          {items.length === 1 ? "tarea restante" : "tareas restantes"}
         </strong>
       </div>
     </div>
