@@ -1,36 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faT, faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./styles.css";
 
 const TodoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [items, setItems] = useState([]);
 
-  const addItem = () => {
-    if (inputValue !== "") {
-      setItems([...items, inputValue]);
-      setInputValue("");
-    } else {
-      alert("Debe estar lleno");
-    }
-  };
+  const [userName, setUserName] = useState("diegonar12")
 
+  const addUser = async () => {
+    try{
+      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`, {method: 'POST'})
+    } catch{
+      console.error('Algo salio mal')
+    }
+  }
+
+  const deleteUser = async () => {
+    try{
+      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`, {method: 'DELETE'})
+    } catch{
+      console.error('Algo salio mal')
+    }
+    setItems('')
+  }
+
+  useEffect(() =>{
+    addUser()
+  }, [])
+
+
+  const addItem = async () => {
+
+    if (inputValue !== ''){
+      try{
+        const response = await fetch(`https://playground.4geeks.com/todo/todos/${userName}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ 'label': inputValue, 'is_done': false }),
+      })
+      const convert = await response.json()
+      setItems([...items, convert])
+      setInputValue('')
+      } catch {
+          console.error('Algo salio mal x2')
+      }
+    } else {
+      alert('Debe estar lleno')
+    } 
+  }
+
+  const deleteItem = async (id) => {
+      const updatedItems = items.filter((item, i) => item.id !== id);
+      setItems(updatedItems);
+    try{
+      const response = await fetch(`https://playground.4geeks.com/todo/todos/${id}`, {method: 'DELETE'})
+    } catch{
+      console.error('Algo salio mal')
+    }
+  }
+ 
   const handleEnter = (e) => {
     if (e.key === "Enter") {
       addItem();
     }
   };
 
-  const removeItem = (index) => {
-    const updatedItems = items.filter((item, i) => i !== index);
-    setItems(updatedItems);
-  };
 
   return (
     <div className="container mt-4">
       <h4 className="text-center mb-4">To-Do List</h4>
       <div className="mb-3">
+      <input
+          type="text"
+          className="form-control"
+          placeholder="Escribe tu usuario"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+        />
         <input
           type="text"
           className="form-control"
@@ -39,8 +87,14 @@ const TodoList = () => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleEnter}
         />
-        <button className="btn btn-primary w-100 mt-2" onClick={addItem}>
-          Agregar
+        <button className="btn btn-success w-100 mt-2" onClick={addUser}>
+          Agregar Usuario
+        </button>
+        <button className="btn btn-danger w-100 mt-2" onClick={deleteUser}>
+          Eliminar Usuario
+        </button>
+        <button className="btn btn-primary w-100 mt-2" onClick={deleteUser}>
+          Login 
         </button>
       </div>
       <ul className="list-group">
@@ -61,12 +115,12 @@ const TodoList = () => {
                   value=""
                   id={`task-${index}`}
                 />
-                {item}
+                {item.label}
               </div>
               <FontAwesomeIcon
                 icon={faTrash}
                 className="text-danger trash-icon"
-                onClick={() => removeItem(index)}
+                onClick={() => deleteItem(item.id)}
               />
             </li>
           ))
