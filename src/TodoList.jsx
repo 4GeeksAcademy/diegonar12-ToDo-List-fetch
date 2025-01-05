@@ -7,6 +7,7 @@ const TodoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [items, setItems] = useState([]);
   const [userName, setUserName] = useState("diegonarva12");
+  const [turn, setTurn] = useState(false);
 
   const addUser = async () => {
     try {
@@ -77,29 +78,18 @@ const TodoList = () => {
   
 
   const deleteItem = async (index) => {
-    const updatedItems = items.filter((_, i) => i !== index);
-
+    const itemToDelete = items[index];
     try {
-      const response = await fetch(
-        `https://playground.4geeks.com/todo/todos/${userName}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedItems),
-        }
-      );
-
-      if (!response.ok) {
-        console.error(`Error al eliminar la tarea: ${response.status}`);
-        alert("No se pudo eliminar la tarea.");
-        return;
-      }
-
-      setItems(updatedItems);
+        const response = await fetch(
+            `https://playground.4geeks.com/todo/todos/${userName}/${itemToDelete.id}`,
+            { method: "DELETE" }
+        );
+        
     } catch (error) {
-      console.error("Algo salió mal al eliminar la tarea", error);
+        console.error("Error al eliminar la tarea", error);
     }
-  };
+};
+
 
   const getItems = async () => {
     try {
@@ -116,7 +106,7 @@ const TodoList = () => {
       }
 
       const data = await response.json();
-      setItems(data);
+      setItems(data.todos);
     } catch (error) {
       console.error("Algo salió mal al obtener las tareas", error);
       alert("No se pudieron cargar las tareas.");
@@ -128,10 +118,22 @@ const TodoList = () => {
       addTask();
     }
   };
+
+  const handlerSearch = async () => {
+    try {
+        if (userName.length < 2) {
+            alert("Muy corto")
+            return
+        }
+        setTurn(prev => !prev)
+    } catch (error) {
+        console.error(error)
+    };
+};
   
-  // useEffect(() => {
-  //     getItems();
-  // }, []);
+  useEffect(()=>{
+    handlerSearch()
+  },[turn])
 
   return (
     <div className="container mt-4">
