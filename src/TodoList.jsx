@@ -6,7 +6,7 @@ import "./styles.css";
 const TodoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [items, setItems] = useState([]);
-  const [userName, setUserName] = useState("diegonar12");
+  const [userName, setUserName] = useState("diegonarva12");
 
   const addUser = async () => {
     try {
@@ -33,47 +33,48 @@ const TodoList = () => {
       );
       if (!response.ok) {
         console.error(`Error al eliminar usuario: ${response.status}`);
-        alert("No se pudo eliminar el usuario.");
+        alert("No se pudo eliminar el usuario o el usuario no existe.");
         return;
       }
       setItems([]);
       alert("Usuario eliminado correctamente.");
     } catch (error) {
-      console.error("Algo salió mal al borrar el usuario", error);
+      console.error("Algo salio mal al borrar el usuario", error);
     }
   };
+  
 
-  const addItem = async () => {
+  const addTask = async () => {
     if (inputValue === "") {
       alert("Debe escribir una tarea.");
       return;
     }
-
+  
     const newTask = { label: inputValue, is_done: false };
-    const updatedItems = [...items, newTask];
-
+  
     try {
       const response = await fetch(
         `https://playground.4geeks.com/todo/todos/${userName}`,
         {
-          method: "PUT",
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedItems),
+          body: JSON.stringify(newTask), 
         }
       );
-
+  
       if (!response.ok) {
         console.error(`Error al agregar la tarea: ${response.status}`);
         alert("No se pudo agregar la tarea.");
         return;
       }
-
-      setItems(updatedItems);
+  
+      setItems((prevItems) => [...prevItems, newTask]); 
       setInputValue("");
     } catch (error) {
       console.error("Algo salió mal al agregar la tarea", error);
     }
   };
+  
 
   const deleteItem = async (index) => {
     const updatedItems = items.filter((_, i) => i !== index);
@@ -82,7 +83,7 @@ const TodoList = () => {
       const response = await fetch(
         `https://playground.4geeks.com/todo/todos/${userName}`,
         {
-          method: "PUT",
+          method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updatedItems),
         }
@@ -103,7 +104,7 @@ const TodoList = () => {
   const getItems = async () => {
     try {
       const response = await fetch(
-        `https://playground.4geeks.com/todo/todos/${userName}`,
+        `https://playground.4geeks.com/todo/users/${userName}`,
         { method: "GET" }
       );
 
@@ -124,17 +125,13 @@ const TodoList = () => {
 
   const handleEnter = (e) => {
     if (e.key === "Enter") {
-      addItem();
+      addTask();
     }
   };
-
-  useEffect(() => {
-    const initializeUser = async () => {
-      await addUser();
-      await getItems();
-    };
-    initializeUser();
-  }, []);
+  
+  // useEffect(() => {
+  //     getItems();
+  // }, []);
 
   return (
     <div className="container mt-4">
