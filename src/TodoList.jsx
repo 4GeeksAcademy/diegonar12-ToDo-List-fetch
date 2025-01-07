@@ -7,7 +7,6 @@ const TodoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [items, setItems] = useState([]);
   const [userName, setUserName] = useState("diegonarva12");
-  const [turn, setTurn] = useState(false);
 
   const addUser = async () => {
     try {
@@ -43,53 +42,53 @@ const TodoList = () => {
       console.error("Algo salio mal al borrar el usuario", error);
     }
   };
-  
 
   const addTask = async () => {
     if (inputValue === "") {
       alert("Debe escribir una tarea.");
       return;
     }
-  
+
     const newTask = { label: inputValue, is_done: false };
-  
+
     try {
       const response = await fetch(
         `https://playground.4geeks.com/todo/todos/${userName}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newTask), 
+          body: JSON.stringify(newTask),
         }
       );
-  
+
       if (!response.ok) {
         console.error(`Error al agregar la tarea: ${response.status}`);
         alert("No se pudo agregar la tarea.");
         return;
       }
-  
-      setItems((prevItems) => [...prevItems, newTask]); 
+
+      setItems((prevItems) => [...prevItems, newTask]);
       setInputValue("");
     } catch (error) {
       console.error("Algo salió mal al agregar la tarea", error);
     }
   };
-  
 
-  const deleteItem = async (index) => {
-    const itemToDelete = items[index];
+  const deleteItem = async (id) => {
     try {
-        const response = await fetch(
-            `https://playground.4geeks.com/todo/todos/${userName}/${itemToDelete.id}`,
-            { method: "DELETE" }
-        );
-        
+      const response = await fetch(
+        `https://playground.4geeks.com/todo/todos/${id}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) {
+        throw new Error("algo salio maaal");
+      }
+      let listaFinal = items.filter((item) => item.id != id);
+      setItems(listaFinal);
     } catch (error) {
-        console.error("Error al eliminar la tarea", error);
+      console.error("Error al eliminar la tarea", error);
     }
-};
-
+  };
 
   const getItems = async () => {
     try {
@@ -119,21 +118,9 @@ const TodoList = () => {
     }
   };
 
-  const handlerSearch = async () => {
-    try {
-        if (userName.length < 2) {
-            alert("Muy corto")
-            return
-        }
-        setTurn(prev => !prev)
-    } catch (error) {
-        console.error(error)
-    };
-};
-  
-  useEffect(()=>{
-    handlerSearch()
-  },[turn])
+  useEffect(() => {
+    getItems();
+  }, []);
 
   return (
     <div className="container mt-4">
@@ -187,7 +174,7 @@ const TodoList = () => {
               <FontAwesomeIcon
                 icon={faTrash}
                 className="text-danger trash-icon"
-                onClick={() => deleteItem(index)}
+                onClick={() => deleteItem(item.id)}
               />
             </li>
           ))
